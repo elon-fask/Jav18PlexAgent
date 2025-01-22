@@ -1,12 +1,13 @@
 from site import *
-import urllib2
+import urllib.request
+import urllib.parse
+import urllib.error
 import json
 
 SEARCH_URL = URL('https://www.javdatabase.com/?s=', '&wpessid=')
 DETAIL_URL = URL('https://www.javdatabase.com/movies/', '/')
 ACTRESS_DETAIL_URL = URL('https://www.javdatabase.com/idols/', '/')
 ACTRESS_SEARCH_URL = URL('https://www.javdatabase.com/?s=', '&wpessid=')
-
 
 class SiteJavDB(Site):
 
@@ -126,7 +127,7 @@ class SiteJavDB(Site):
                 page = HTML.ElementFromURL(ACTRESS_SEARCH_URL.get(name, '391488'))
                 search_results = page.xpath("//div[contains(@class, 'card-body')]")
                 if len(search_results) == 0:
-                    self.DoLog('No results, tring to change the wpessid')
+                    self.DoLog('No results, trying to change the wpessid')
                     wpessid = page.xpath("//select[contains(@class, 'search-selector')]/option")[0].get('value')
                     page = HTML.ElementFromURL(ACTRESS_SEARCH_URL.get(name, wpessid))
                     search_results = page.xpath("//div[contains(@class, 'card-body')]")
@@ -155,5 +156,3 @@ class SiteJavDB(Site):
 
         image_url = page.xpath('//div[contains(@class, "idol-portrait")]//img')[0].get("src")
         return image_url
-
-
