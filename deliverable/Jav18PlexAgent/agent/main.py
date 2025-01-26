@@ -1,19 +1,10 @@
-# Entry point for the Plex Agent application
-from agent.scraper import scrape_links
-from agent.downloader import download_torrent
-from agent.db_manager import initialize_db, check_recorded
-from cli.terminal_interface import start_terminal
-
-
-def main():
-    initialize_db()  # Set up the SQLite database
-    while True:
-        links = scrape_links()  # Scrape links from defined websites
-        for link in links:
-            if not check_recorded(link):  # Check if link is already recorded
-                download_torrent(link)  # Download the torrent file
-        start_terminal()  # Start the interactive terminal interface
-
+# main.py
+import sqlite3
+from cli.terminal_interface import display_welcome
+from agent.db_manager import DBManager
 
 if __name__ == "__main__":
-    main()
+    display_welcome()
+    db_manager = DBManager()
+    # The database and tables are initialized in the DBManager constructor
+    db_manager.close()
