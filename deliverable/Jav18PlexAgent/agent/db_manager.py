@@ -1,12 +1,28 @@
 # agent/db_manager.py
 import sqlite3
+import os
 
 
 class DBManager:
-    def __init__(self, db_path="DATA/torrents.db"):
-        self.connection = sqlite3.connect(db_path)
-        self.cursor = self.connection.cursor()
-        self.initialize_tables()
+    def __init__(self, db_path="DATA/plexagent.db"):
+        self.db_path = db_path
+        self.connection = None
+        self.cursor = None
+        self.initialize_database()
+
+    def initialize_database(self):
+        # Check if the database file exists
+        if not os.path.exists(self.db_path):
+            console.print(
+                "[bold yellow]Database does not exist. Creating a new database...[/bold yellow]"
+            )
+            self.connection = sqlite3.connect(self.db_path)
+            self.cursor = self.connection.cursor()
+            self.initialize_tables()
+        else:
+            console.print("[bold green]Database already exists.[/bold green]")
+            self.connection = sqlite3.connect(self.db_path)
+            self.cursor = self.connection.cursor()
 
     def initialize_tables(self):
         # Create tables if they do not exist
@@ -84,4 +100,5 @@ class DBManager:
         self.connection.commit()
 
     def close(self):
-        self.connection.close()
+        if self.connection:
+            self.connection.close()
