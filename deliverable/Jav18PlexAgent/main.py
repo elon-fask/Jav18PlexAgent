@@ -1,6 +1,6 @@
 # main.py
-from cli.erminal_interface import start_terminal
-from .db_manager import DBManager
+from cli.terminal_interface import start_terminal
+from agent.db_manager import DBManager
 
 
 def main():

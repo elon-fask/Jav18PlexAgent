@@ -1,6 +1,10 @@
 # agent/db_manager.py
 import sqlite3
 import os
+from rich.console import Console
+
+
+console = Console()
 
 
 class DBManager:
@@ -11,7 +15,6 @@ class DBManager:
         self.initialize_database()
 
     def initialize_database(self):
-        # Check if the database file exists
         if not os.path.exists(self.db_path):
             console.print(
                 "[bold yellow]Database does not exist. Creating a new database...[/bold yellow]"
