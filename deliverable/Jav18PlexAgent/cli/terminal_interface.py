@@ -6,7 +6,11 @@ from rich.progress import Progress
 from rich.table import Table
 from rich.live import Live
 from tabulate import tabulate
+from agent import db_manager
 from agent.db_manager import DBManager
+from agent.scraper import Scraper
+
+import sqlite3
 
 console = Console()
 
@@ -28,7 +32,7 @@ def start_terminal(db_manager):
         elif command == "2":
             display_database_status(db_manager)
         elif command == "3":
-            start_scraping_process()
+            start_scraping_process(db_manager)
         elif command == "4":
             console.print("[bold red]Exiting terminal.[/bold red]")
             break
@@ -50,30 +54,57 @@ def display_logs():
 def display_database_status(db_manager):
     console.print("[bold green]Checking database status...[/bold green]")
     try:
+        # Step 1: Display table row counts
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Table Name", style="dim", width=20)
         table.add_column("Row Count", justify="right")
 
-        for table_name in [
+        # List of all table names
+        table_names = [
             "scraper_141jav",
             "scraper_avwiki",
             "scraper_javdb",
             "scraper_javguru",
             "scraper_onejav",
             "scraper_r18dev",
-        ]:
+        ]
+
+        # Display row counts for all tables
+        for table_name in table_names:
             db_manager.cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
             row_count = db_manager.cursor.fetchone()[0]
             table.add_row(table_name, str(row_count))
 
         console.print(table)
+
+        # Step 2: Display detailed table contents
+        for table_name in table_names:
+            console.print(f"\n[bold blue]Contents of {table_name}:[/bold blue]")
+
+            # Fetch column names dynamically
+            db_manager.cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = [info[1] for info in db_manager.cursor.fetchall()]  # Column names
+
+            # Query all rows from the table
+            db_manager.cursor.execute(f"SELECT * FROM {table_name}")
+            rows = db_manager.cursor.fetchall()
+
+            # Print the table using tabulate if there are rows
+            if rows:
+                print(tabulate(rows, headers=columns, tablefmt="grid"))
+            else:
+                console.print(
+                    f"[italic]No data available in {table_name} table.[/italic]"
+                )
+
         console.print("[bold green]Database status: OK[/bold green]")
     except sqlite3.Error as e:
         console.print(f"[bold red]Error checking database status: {e}[/bold red]")
 
 
-def start_scraping_process():
+def start_scraping_process(db_manager):
     console.print("[bold green]Starting scraping process...[/bold green]")
+
     services = [
         "scraper_141jav",
         "scraper_avwiki",
@@ -82,9 +113,34 @@ def start_scraping_process():
         "scraper_onejav",
         "scraper_r18dev",
     ]
-
+    scraper = Scraper(db_manager)
     for service in services:
         console.print(f"[bold blue]Running service: {service}[/bold blue]")
-        # Placeholder for actual scraping logic
-        time.sleep(1)  # Simulate scraping time
+
+        # Ask user if they want to skip the service
+        skip = console.input(
+            "[bold yellow]Do you want to skip this service? (y/n): [/bold yellow]"
+        )
+        if skip.lower() == "y":
+            console.print(f"[bold red]Skipping service: {service}[/bold red]")
+            continue
+
+        if service == "scraper_141jav":
+            scraper.scrape_141jav()
+        elif service == "scraper_avwiki":
+            scraper.scrape_avwiki()
+        elif service == "scraper_javdb":
+            scraper.scrape_javdb()
+        elif service == "scraper_javguru":
+            scraper.scrape_javguru()
+        elif service == "scraper_onejav":
+            scraper.scrape_onejav()
+        elif service == "scraper_r18dev":
+            scraper.scrape_r18dev()
+        else:
+            console.print(
+                f"[bold green]{service} is a placeholder service. Skipping...[/bold green]"
+            )
+
         console.print(f"[bold green]{service} completed successfully.[/bold green]")
+        time.sleep(1)  # Simulate scraping time
