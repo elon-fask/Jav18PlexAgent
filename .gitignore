@@ -2,3 +2,27 @@
 Jav18.bundle/venv/
 deliverable/Jav18PlexAgent/venv/
 Jav18.bundle/Contents/Code/__pycache__/
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+.venv/
+
+# Ignore database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Ignore logs and temp files
+*.log
+*.bak
+*.swp
+*.swo
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

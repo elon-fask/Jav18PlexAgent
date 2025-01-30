@@ -10,9 +10,14 @@ from agent import db_manager
 from agent.db_manager import DBManager
 from agent.scraper import Scraper
 
+from agent.downloader import start_download_process
 import sqlite3
 
 console = Console()
+
+# Define default directories
+DEFAULT_TORRENT_DIR = "DATA/torrentFiles"
+DEFAULT_CONTENT_DIR = "DATA/mp4"
 
 
 def start_terminal(db_manager):
@@ -23,7 +28,8 @@ def start_terminal(db_manager):
         console.print("[1] View logs")
         console.print("[2] Check database status")
         console.print("[3] Populate data (start scraping process)")
-        console.print("[4] Exit")
+        console.print("[4] Download content")
+        console.print("[0] Exit")
 
         command = console.input("[bold yellow]Enter command: [/bold yellow]")
 
@@ -34,6 +40,36 @@ def start_terminal(db_manager):
         elif command == "3":
             start_scraping_process(db_manager)
         elif command == "4":
+            while True:  # Ensure a non-empty torrent URL
+                torrent_url = console.input(
+                    "[bold blue]Enter torrent link (required): [/bold blue]"
+                ).strip()
+                if torrent_url:
+                    break
+                console.print("[bold red]Torrent link cannot be empty![/bold red]")
+
+            # Ask for save directories, use default if nothing is entered
+            torrent_save_dir = console.input(
+                f"[bold blue]Enter folder to save torrent files (default: {DEFAULT_TORRENT_DIR}): [/bold blue]"
+            ).strip()
+            content_save_dir = console.input(
+                f"[bold blue]Enter folder to save downloaded content (default: {DEFAULT_CONTENT_DIR}): [/bold blue]"
+            ).strip()
+
+            # Use defaults if user input is empty
+            torrent_save_dir = (
+                torrent_save_dir if torrent_save_dir else DEFAULT_TORRENT_DIR
+            )
+            content_save_dir = (
+                content_save_dir if content_save_dir else DEFAULT_CONTENT_DIR
+            )
+
+            # Ensure directories exist
+            os.makedirs(torrent_save_dir, exist_ok=True)
+            os.makedirs(content_save_dir, exist_ok=True)
+
+            start_download_process(torrent_url, torrent_save_dir)
+        elif command == "0":
             console.print("[bold red]Exiting terminal.[/bold red]")
             break
         else:

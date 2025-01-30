@@ -2,9 +2,11 @@
 import sqlite3
 import requests
 from lxml import html
+from rich import table
 from rich.console import Console
+import lxml
 
-from agent import db_manager
+# from agent import db_manager
 from agent.db_manager import DBManager
 
 console = Console()
@@ -71,22 +73,31 @@ class Scraper:
 
             tree = html.fromstring(response.content)
             # Extract torrent data using the specified XPath
-            for i in range(1, 12):  # Adjust range based on the number of divs per page
+            for i in range(2, 12):
+                # Adjust range based on the number of divs per page
                 xpath_link = f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/a[2]"
                 xpath_title = (
-                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/a[2]/text()"
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/h5/a//text()"
                 )
                 xpath_size = (
-                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/span/text()"
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/h5/span//text()"
                 )
-                xpath_date = f"/html/body/div[1]/div[{i}]/div/div/div[2]/p/a/text()"
-                xpath_tags = f"/html/body/div[1]/div[{i}]/div/div/div[2]/div[@class='tags']/a/text()"
+                xpath_date = (
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/p[1]/a//text()"
+                )
+                xpath_tags = (
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/div[1]/a//text()"
+                )
                 xpath_description = (
-                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/p[2]/text()"
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/p[2]//text()"
                 )
-                xpath_actors = f"/html/body/div[1]/div[{i}]/div/div/div[2]/div[@class='panel']/a/text()"
-                xpath_magnet = f"/html/body/div[1]/div[{i}]/div/div/div[2]/a[@title='Magnet torrent']/@href"
-                xpath_torrent_download = f"/html/body/div[1]/div[{i}]/div/div/div[2]/a[@title='Download .torrent']/@href"
+                xpath_actors = (
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/div[2]/a//text()"
+                )
+                xpath_magnet = f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/a[1]"
+                xpath_torrent_download = (
+                    f"/html/body/div[1]/div[{i}]/div/div/div[2]/div/a[2]"
+                )
 
                 # Extract elements using XPath
                 link_elements = tree.xpath(xpath_link)
@@ -99,6 +110,9 @@ class Scraper:
                 magnet_elements = tree.xpath(xpath_magnet)
                 torrent_download_elements = tree.xpath(xpath_torrent_download)
 
+                print(
+                    f"link element is {torrent_download_elements} and {magnet_elements} "
+                )
                 # Check if the essential elements are present
                 if link_elements and title_elements:
                     link = link_elements[0].get("href")
@@ -120,13 +134,22 @@ class Scraper:
                         if actor_elements
                         else None
                     )
-                    magnet = magnet_elements[0] if magnet_elements else None
+                    magnet = magnet_elements[0].get("href") if magnet_elements else None
                     torrent_download = (
-                        torrent_download_elements[0]
+                        torrent_download_elements[0].get("href")
                         if torrent_download_elements
                         else None
                     )
 
+                    # print(
+                    #     lxml.etree.tostring(
+                    #         link_elements[0], pretty_print=True
+                    #     ).decode()
+                    # )
+                    # Print the value of torrents_data using the console
+                    console.print(
+                        f"[bold green]Scraped {len(torrents_data)} torrents:[/bold green] {torrents_data}"
+                    )
                     # Save the collected data to the database
                     self.save_to_database(
                         "scraper_141jav",
@@ -157,8 +180,9 @@ class Scraper:
                             torrent_download,
                         )
                     )
+            # page_number += 1
 
-            page_number += 1
+            page_number = 1
 
         # Print the value of torrents_data using the console
         console.print(
@@ -173,11 +197,12 @@ class Scraper:
         # VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         # """
         try:
-            query = f"INSERT INTO {table_name} (link, title, size, date, tags, description, actors, magnet, torrent_download, scraped) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-            self.cursor.execute(query, data)
-            self.connection.commit()
+            self.db_manager.save_to_database(table_name, data)
+            # query = f"INSERT INTO {table_name} (link, title, size, date, tags, description, actors, magnet, torrent_download, scraped) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            # self.cursor.execute(query, data)
+            # self.connection.commit()
             console.print(
-                f"[bold green]Saved to database: {data[1]} - {data[0]}[/bold green]"
+                f"[bold green]Saved to database: \n{data[1]} - {data[0]}[/bold green]"
             )
         except Exception as e:
             console.print(f"[bold red]Error saving to database: {e}[/bold red]")

@@ -3,3 +3,4 @@ tabulate
 requests
 beautifulsoup4
 lxml
+torrentp

@@ -2,7 +2,7 @@
 import sqlite3
 import os
 from rich.console import Console
-
+import time
 
 console = Console()
 
@@ -12,8 +12,8 @@ class DBManager:
         self.db_path = db_path
         self.connection = sqlite3.connect(db_path)
         self.cursor = self.connection.cursor()
-        # self.initialize_database()
-        self.initialize_tables()
+        self.initialize_database()
+        # self.initialize_tables()
 
     def initialize_database(self):
         if not os.path.exists(self.db_path):
@@ -33,6 +33,7 @@ class DBManager:
             query = f"INSERT INTO {table_name} (link, title, size, date, tags, description, actors, magnet, torrent_download, scraped) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             self.cursor.execute(query, data)
             self.connection.commit()
+            time.sleep(2)
         except Exception as e:
             print(f"Error saving to database: {e}")
 
@@ -165,6 +166,22 @@ class DBManager:
         """)
 
         self.connection.commit()
+
+    # def save_to_database(self, table_name, data):
+    #     # Prepare the SQL statement to insert data into the specified table
+    #     # sql = f"""
+    #     # INSERT INTO {table_name} (link, title, scraped, scraped_at)
+    #     # VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    #     # """
+    #     try:
+    #         query = f"INSERT INTO {table_name} (link, title, size, date, tags, description, actors, magnet, torrent_download, scraped) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    #         self.cursor.execute(query, data)
+    #         self.connection.commit()
+    #         console.print(
+    #             f"[bold green]Saved to database: {data[1]} - {data[0]}[/bold green]"
+    #         )
+    #     except Exception as e:
+    #         console.print(f"[bold red]Error saving to database: {e}[/bold red]")
 
     def close(self):
         if self.connection:
