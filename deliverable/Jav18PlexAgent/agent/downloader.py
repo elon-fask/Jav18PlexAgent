@@ -64,8 +64,8 @@ def start_download_process(link, torrent_save_dir):
         console.print("[bold green]Starting download process...[/bold green]")
 
         # Step 1: Download the torrent file
-        torrent_file_path = download_torrent_file(link, torrent_save_dir)
-
+        # torrent_file_path = download_torrent_file(link, torrent_save_dir)
+        torrent_file_path = "DATA/torrentFiles/KING270.torrent"
         # Step 2: Add the torrent to Transmission for downloading
         download_content_from_torrent(torrent_file_path)
 
