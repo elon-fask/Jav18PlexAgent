@@ -40,35 +40,29 @@ def start_terminal(db_manager):
         elif command == "3":
             start_scraping_process(db_manager)
         elif command == "4":
-            while True:  # Ensure a non-empty torrent URL
-                torrent_url = console.input(
-                    "[bold blue]Enter torrent link (required): [/bold blue]"
+            while True:  # Ensure a non-empty magnet link
+                magnet_link = console.input(
+                    "[bold blue]Enter magnet link (required): [/bold blue]"
                 ).strip()
-                if torrent_url:
+                if magnet_link:
                     break
-                console.print("[bold red]Torrent link cannot be empty![/bold red]")
+                console.print("[bold red]Magnet link cannot be empty![/bold red]")
 
-            # Ask for save directories, use default if nothing is entered
-            torrent_save_dir = console.input(
-                f"[bold blue]Enter folder to save torrent files (default: {DEFAULT_TORRENT_DIR}): [/bold blue]"
-            ).strip()
+            # Ask for save directory, use default if nothing is entered
             content_save_dir = console.input(
                 f"[bold blue]Enter folder to save downloaded content (default: {DEFAULT_CONTENT_DIR}): [/bold blue]"
             ).strip()
 
-            # Use defaults if user input is empty
-            torrent_save_dir = (
-                torrent_save_dir if torrent_save_dir else DEFAULT_TORRENT_DIR
-            )
+            # Use default if user input is empty
             content_save_dir = (
                 content_save_dir if content_save_dir else DEFAULT_CONTENT_DIR
             )
 
-            # Ensure directories exist
-            os.makedirs(torrent_save_dir, exist_ok=True)
+            # Ensure directory exists
             os.makedirs(content_save_dir, exist_ok=True)
 
-            start_download_process(torrent_url, torrent_save_dir)
+            # Start the download process
+            start_download_process(magnet_link, content_save_dir)
         elif command == "0":
             console.print("[bold red]Exiting terminal.[/bold red]")
             break
